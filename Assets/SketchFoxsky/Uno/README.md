@@ -198,3 +198,89 @@ These are methods to be used by UI buttons
   - The Player ID making the request.
   
 </details>
+
+## Setup
+Here is how to setup the various aspects of the Uno Prefab.
+
+<details>
+<summary>Manager Setup</summary>
+
+---
+
+#### UnoGameManager  
+  Child GameObjects:
+  
+  - Deck
+    - (Optional) Deck Visual
+  - Played Card Position
+  - Cards
+    - (All your *UnoCards*)
+  - Players
+    - (All your *UnoPlayerHands*)
+  - UI Canvas
+    - StartButton
+    - ResetButton
+<details>
+  <summary>UnoGameManager UI Setup</summary>
+
+#### StartButton
+- **OnClick()**
+  - Add a target by clicking the `+` sign.
+  - Drag the UnoGameManager GameObject into the property.
+  - Select the `UdonBehaviour.SendCustomEvent(string)` option in the Dropdown
+    - If there is multiple UdonBehaviours on this GameObject, select the UdonGameManagers UdonBehavior.
+  - In the text field enter "StartMatchButton"
+
+#### ResetButton
+- **OnClick()**
+  - Add a target by clicking the *+* sign.
+  - Drag the UnoGameManager GameObject into the property.
+  - Select the `UdonBehaviour.SendCustomEvent(string)` option in the Dropdown
+    - If there is multiple UdonBehaviours on this GameObject, select the UdonGameManagers UdonBehavior.
+  - In the text field enter "ResetMatchButton"
+  
+</details>
+</details>
+<details>
+  <summary>PlayerSetup</summary>
+
+---
+
+#### UnoPlayerHand
+UnoPlayerHand and UnoSeatRelay should be on this GameObject
+
+  ChildGameObjects:
+
+  - PlayerName (TextMeshPro)
+  - Card Anchor
+  - UI Canvas
+    - JoinButton
+    - LeaveButton
+    - DealCardButton
+   
+<details>
+  <summary>UnoPlayerHand UI Setup</summary>
+
+#### JoinButton
+- **OnClick()**
+  - Add a target by clicking the `+` sign.
+  - Drag the UnoGameManager GameObject into the property.
+  - Select the `UdonBehaviour(#).SendCustomEvent(string)` option for the UnoPlayerHand UdonBehaviour in the Dropdown
+  - In the text field enter "JoinGameButton"
+
+#### LeaveButton
+- **OnClick()**
+  - Add a target by clicking the `+` sign.
+  - Drag the UnoGameManager GameObject into the property.
+  - Select the `UdonBehaviour(#).SendCustomEvent(string)` option for the UnoPlayerHand UdonBehaviour in the Dropdown
+  - In the text field enter "LeaveGameButton"
+ 
+#### DealCardButton
+- **OnClick()**
+  - Add a target by clicking the `+` sign.
+  - Drag the UnoGameManager GameObject into the property.
+  - Select the `UdonBehaviour(#).SendCustomEvent(string)` option for the UnoPlayerHand UdonBehaviour in the Dropdown
+  - In the text field enter "DealCardButton"
+  
+</details>
+</details>
