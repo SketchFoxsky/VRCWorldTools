@@ -242,7 +242,7 @@ Here is how to setup the various aspects of the Uno Prefab.
 </details>
 </details>
 <details>
-  <summary>PlayerSetup</summary>
+  <summary>Player Setup</summary>
 
 ---
 
