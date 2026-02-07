@@ -6,6 +6,9 @@ This file contains documentation for the components and Setup instructions for t
 
 <details>
 <summary>UnoGameManager</summary>
+  
+---
+  
 This component is the brains of the whole prefab, this component should be the root GameObject of all your Uno objects.
 
 #### Card Pool
@@ -67,6 +70,9 @@ These are methods used by UI buttons
 </details>
 <details>
 <summary>UnoCard</summary>
+  
+---
+  
   This component should be on **EVERY** uno card that will be used in the game.
   
   This component requires a *MeshRenderer*, *VRCPickup*, *Rigidbody*, and *BoxCollider* Component.
@@ -106,4 +112,89 @@ This is purely a debug for when testing in editor. This is handled by the *UnoGa
 - **PlayRequested**
   - When true will request the *UnoGameManager* to play this card.
   - In future versions the *UnoGameManager* may deny the play if its invalid or not the players turn.
+</details>
+<details>
+<summary>UnoPlayerHand</summary>
+
+---
+  
+  This component should be on **EVERY** player that will be used in the game.
+
+  This component requires the *UnoSeatRelay* component
+
+#### Setup
+- **Manager**
+  - This is the *UnoGameManger* this PlayerHand is managed by.
+- **Relay**
+  - This is the *UnoSeatRelay* that calls to the *UnoGameManager* for networked events.
+- **Seat Index**
+  - This is the index that identifies the PlayerHand for the *UnoGameManager*
+  - This is not auto-assigned, you will need to index each PlayerHand.
+  - In future versions this will be used to establish player turns.
+- **Player Name**
+  - This is the GameObject with the *TextMeshPro* component; to display the Player Name who occupies this PlayerHand.
+
+#### Hand Root
+- **Hand Root**
+  - This is the GameObjects where cards will be held for the PlayerHand
+
+#### Layout
+- **Card Spacing (0.015)**
+  - This is how far cards are spaced out.
+  - If the number of cards exceed the Max Hand Width itll be decreased.
+- **Max Hand Width (0.4)**
+  - This is how wide the hand can be in Meters
+
+#### Anti Z-Fight
+- **Step Amount (0.0015)**
+  - How far cards are apart when stacked to avoid Z-Fighting
+  - This value can be negative to invert stack direction.
+
+#### Fan/Arc
+- **Fan Angle (45)**
+  - Angle of displayed cards along the PlayerHand
+- **Fan Angle Offset (0)**
+  - Where along the fan the cards are positioned.
+- **Arc Radius (0.2)**
+  - How big the fan arc is.
+- **Use Arc Position**
+  - This determines if the cards will be placed along the arc or not.
+- **Card Local Euler (0,0,0)**
+  - This is the rotation offset for the card if the cards FBX was exported on a different rotation.
+
+### Methods
+These are methods to be used by UI buttons
+
+- **JoinGameButton**
+  - Will have *UnoSeatRelay* request to the *UnoGameManager* to occupy this PlayerHand
+- **LeaveGameButton**
+  - Will have *UnoSeatRelay* request to the *UnoGameManager* to leave this PlayerHand
+- **DealCardButton**
+  - Will have *UnoSeatRelay* request to the *UnoGameManager*  to deal a card to this Playerhand
+</details>
+<details>
+  <summary>UnoSeatRelay</summary>
+
+---
+
+  This component should be on the same GameObject as the *UnoPlayerHand*.
+
+  #### Links
+  - **Manager**
+    - This is the *UnoGameManager* that this UnoSeatRelay is requesting from.
+  - **Hand**
+    - This is the *UnoPlayerHand* that this UnoSeatRelay relays the request from.
+
+  #### Synced Request
+  These are debugs to be viewed in the inspector, do not edit these values.
+
+- **Request Seq**
+  - Incrimental, just to tell the master this is a new request.
+- **Request Type**
+  - 1 = Join
+  - 2 = Deal
+  - 3 = Leave
+- **Request Player ID**
+  - The Player ID making the request.
+  
 </details>
