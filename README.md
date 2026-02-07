@@ -2,7 +2,7 @@
 Collection of useful tools and fun gimmicks for VRChat worlds!
 
 ## Uno Card Game Prefab
-Read **setup** and **documentation** for the prefab (HERE).
+Read **setup** and **documentation** for the prefab [(HERE)](https://github.com/SketchFoxsky/VRCWorldTools/tree/main/Assets/SketchFoxsky/Uno#setup-and-documentation).
 
 Fully functional card game to drag and drop into your world!
 
