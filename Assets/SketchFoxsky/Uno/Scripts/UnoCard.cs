@@ -210,9 +210,11 @@ namespace SketchFoxsky.Uno
             if (_pickup != null && _pickup.enabled)
             {
                 if (DisablePickupForNonOwners)
-                    _pickup.pickupable = isOwner && !IsInPlayedSlot;
-                else
-                    _pickup.pickupable = !IsInPlayedSlot;
+                    _pickup.pickupable = isOwner;
+                if (IsInPlayedSlot)
+                    _pickup.pickupable = false;
+                if (isOwner && !IsInPlayedSlot)
+                    _pickup.pickupable = true;
             }
         }
 
@@ -336,8 +338,9 @@ namespace SketchFoxsky.Uno
             if (IsInPlayedSlot) return;
             if (!Manager.CanLocalPlayCard(CardID)) return;
 
-            // Drop immediately
+            // Drop immediately and disable pickup
             _pickup.Drop();
+            _pickup.pickupable = false;
 
             // Mark pending play (sync to master)
             PlayRequested = true;

@@ -645,6 +645,7 @@ namespace SketchFoxsky.Uno
                 if (c.CardRenderer != null)
                     c.CardRenderer.enabled = visible;
 
+                /*
                 // Pickup
                 var p = (VRC.SDK3.Components.VRCPickup)c.GetComponent(typeof(VRC.SDK3.Components.VRCPickup));
                 if (p != null)
@@ -652,6 +653,7 @@ namespace SketchFoxsky.Uno
                     p.enabled = visible;
                     p.pickupable = visible;
                 }
+                */
 
                 if (i == _lastPlayedCardIndex)
                 {
