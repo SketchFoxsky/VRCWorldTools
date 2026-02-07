@@ -65,6 +65,27 @@ namespace SketchFoxsky.Uno
 
         #region Unity/VRChat LifeCycles
 
+#if UNITY_EDITOR
+        public void OnValidate()
+        {
+            // Bind manager + ids on cards
+            if (unoCards != null)
+            {
+                for (int i = 0; i < unoCards.Length; i++)
+                {
+                    UnoCard c = unoCards[i];
+                    if (c == null) continue;
+
+                    c.Manager = this;
+                    c.CardID = i;
+
+                    if (c.CardRenderer == null)
+                        c.CardRenderer = c.GetComponent<MeshRenderer>();
+                }
+            }
+        }
+#endif
+
         private void Start()
         {
             _seatCount = (unoPlayers != null) ? unoPlayers.Length : 0;
@@ -644,16 +665,6 @@ namespace SketchFoxsky.Uno
                 // Renderer
                 if (c.CardRenderer != null)
                     c.CardRenderer.enabled = visible;
-
-                /*
-                // Pickup
-                var p = (VRC.SDK3.Components.VRCPickup)c.GetComponent(typeof(VRC.SDK3.Components.VRCPickup));
-                if (p != null)
-                {
-                    p.enabled = visible;
-                    p.pickupable = visible;
-                }
-                */
 
                 if (i == _lastPlayedCardIndex)
                 {
