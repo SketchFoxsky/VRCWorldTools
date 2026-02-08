@@ -1,0 +1,41 @@
+name: Uno Prefab Bug report
+description: Template for bug reports regarding the UnoPrefab
+title: '[UnoPrefab]: '
+body:
+  - type: dropdown
+    id: BugType
+    attributes:
+      label: Bug Type
+      description: What type of bug are you experiencing?
+      options:
+        - Networking
+        - Functionality
+        - Editor
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: UnoPrefabVer
+    attributes:
+      label: UnoPrefab Version
+      description: What was the version of the prefab you downloaded?
+      placeholder: '1_0_1'
+      value: Latest
+      render: Latest
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |-
+        ## Describe the bug.
+        What happened?
+  - type: markdown
+    attributes:
+      value: |-
+        ## Describe the desired outcome.
+        What did you expect to happen?
+  - type: markdown
+    attributes:
+      value: |-
+        ## Reproduction steps
+        How can I recreate your setup to experience the bug?
