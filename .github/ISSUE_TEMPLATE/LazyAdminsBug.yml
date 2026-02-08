@@ -43,7 +43,7 @@ body:
   - type: textarea
     id: Reproduction
     attributes:
-      label: ReproductionSteps
+      label: Reproduction Steps
       description: How can I recreate your setup to experience this bug?
       placeholder: |-
         1. Approach Table
