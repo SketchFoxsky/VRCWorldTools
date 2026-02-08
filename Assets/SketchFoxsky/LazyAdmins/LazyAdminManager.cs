@@ -13,7 +13,7 @@ namespace SketchFoxsky.LazyAdmins
         #region Properties
 
         [Header("Properties")]
-        [Tooltip("This is the URL containing the IDs of players you wish to be admins. Pastebin is a good site for this.")]
+        [Tooltip("This is the URL containing the Names of players you wish to be admins. Pastebin is a good site for this.")]
         public VRCUrl AdminList;
 
         [Tooltip("These are the items to enable for the Admins, they will be disabled for non admins.")]
@@ -48,7 +48,7 @@ namespace SketchFoxsky.LazyAdmins
         private void Start()
         {
             localPlayerName = Networking.LocalPlayer.displayName;
-            Debug.Log("The local players name is:" + localPlayerName);
+            Debug.Log("The local players name is: " + localPlayerName);
             _DownloadURL();
         }
 
