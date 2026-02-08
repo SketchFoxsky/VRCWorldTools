@@ -1,6 +1,6 @@
-name: Uno Prefab Bug report
-description: Template for bug reports regarding the UnoPrefab
-title: '[UnoPrefab]: '
+name: LazyAdmins Bug report
+description: Template for bug reports regarding LazyAdmins
+title: '[LazyAdmins]: '
 labels:
 - bug
 body:
@@ -17,11 +17,11 @@ body:
     validations:
       required: true
   - type: input
-    id: UnoPrefabVersion
+    id: LazyAdminsVersion
     attributes:
-      label: UnoPrefab Version
-      description: What number version of the UnoPrefab were you using?
-      placeholder: '1_0_1'
+      label: LazyAdmins Version
+      description: What number version of LazyAdmins were you using?
+      placeholder: '1_0_0'
     validations:
       required: true
   - type: textarea
