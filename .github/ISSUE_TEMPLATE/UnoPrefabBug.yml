@@ -22,18 +22,31 @@ body:
       placeholder: '1_0_1'
     validations:
       required: true
-  - type: markdown
+  - type: textarea
+    id: BugDescription
     attributes:
-      value: |-
-        ## Describe the bug.
-        What happened?
-  - type: markdown
+      label: Bug Description
+      description: What happened?
+      placeholder: Oh no, our table.... it's broken.
+    validations:
+      required: true
+  - type: textarea
+    id: ExpectedOutcome
     attributes:
-      value: |-
-        ## Describe the desired outcome.
-        What did you expect to happen?
-  - type: markdown
+      label: Expected Outcome
+      description: What were you expecting to happen?
+      placeholder: The table to not be broken.
+    validations:
+      required: true
+  - type: textarea
+    id: Reproduction
     attributes:
-      value: |-
-        ## Reproduction steps
-        How can I recreate your setup to experience the bug?
+      label: ReproductionSteps
+      description: How can I recreate your setup to experience this bug?
+      placeholder: |-
+        1. Approach Table
+        2. Stack bricks on table
+        3. Continue stacking bricks on table
+        4. Repeat step 3 until the table shatters
+    validations:
+      required: true
