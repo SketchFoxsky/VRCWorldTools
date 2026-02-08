@@ -14,14 +14,12 @@ body:
         - Other
     validations:
       required: true
-  - type: textarea
-    id: UnoPrefabVer
+  - type: input
+    id: UnoPrefabVersion
     attributes:
       label: UnoPrefab Version
-      description: What was the version of the prefab you downloaded?
+      description: What number version of the UnoPrefab were you using?
       placeholder: '1_0_1'
-      value: Latest
-      render: Latest
     validations:
       required: true
   - type: markdown
