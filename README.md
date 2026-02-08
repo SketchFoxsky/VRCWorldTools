@@ -14,7 +14,7 @@ Fully functional card game to drag and drop into your world!
 Requires UdonSharp!
 
 ## Lazy Admins
-Read **setup** and **documentation** HERE
+Read **setup** and **documentation** [HERE](https://github.com/SketchFoxsky/VRCWorldTools/tree/main/Assets/SketchFoxsky/LazyAdmins#lazy-admins)
 
 Single script solution to add/remove admins to your world using a site like Pastebin.
 
