@@ -19,6 +19,7 @@ Read **setup** and **documentation** [HERE](https://github.com/SketchFoxsky/VRCW
 Single script solution to add/remove admins to your world using a site like Pastebin.
 
 * Supports ALL platforms!
+* Simple password protection
 * Refreshes on a timer YOU set!
 * Toggles GameObjects for admins!
 
