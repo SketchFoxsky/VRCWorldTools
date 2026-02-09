@@ -23,6 +23,7 @@ namespace SketchFoxsky.Uno
         public bool DisablePickupForNonOwners = true;
 
         [Header("Play Input")]
+        public KeyCode PlayKey = KeyCode.E;
         public float VRHoldToPlaySeconds = 0.25f;
 
         [Header("Played Card Visuals")]
@@ -106,7 +107,7 @@ namespace SketchFoxsky.Uno
             {
                 if (!Networking.LocalPlayer.IsUserInVR())
                 {
-                    if (!_playedThisHold && Input.GetKeyDown(KeyCode.E))
+                    if (!_playedThisHold && Input.GetKeyDown(PlayKey))
                     {
                         _playedThisHold = true;
                         TryRequestPlay();

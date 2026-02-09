@@ -101,7 +101,7 @@ MonoBehaviour:
       Data: 6|UnityEngine.TooltipAttribute, UnityEngine.CoreModule
     - Name: tooltip
       Entry: 1
-      Data: This is the URL containing the IDs of players you wish to be admins.
+      Data: This is the URL containing the Names of players you wish to be admins.
         Pastebin is a good site for this.
     - Name: 
       Entry: 8
