@@ -1,10 +1,46 @@
-﻿using UdonSharp;
+﻿using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Prng;
+using UdonSharp;
 using UnityEngine;
 using VRC.SDK3.Components;
 using VRC.SDKBase;
 
 namespace SketchFoxsky.Uno
 {
+    public enum CardColor
+    {
+        Red,
+        Green,
+        Blue,
+        Yellow,
+        None
+    }
+
+    public enum CardNum
+    {
+        Zero,
+        One,
+        Two,
+        Three,
+        Four,
+        Five,
+        Six,
+        Seven,
+        Eight,
+        Nine,
+        PlusTwo,
+        Reverse,
+        Skip,
+        Wild,
+        WildPlusFour
+    }
+
+    public enum CardState
+    {
+        InDeck,
+        InHand,
+        InPlay
+    }
+
     [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
     [RequireComponent(typeof(MeshRenderer))]
     [RequireComponent(typeof(VRCPickup))]
@@ -17,6 +53,29 @@ namespace SketchFoxsky.Uno
 
         [Header("Identity")]
         [UdonSynced] public int CardID;
+
+        [Header("Un-Used Identity")]
+        [Tooltip("These are un-used at the moment!")]
+        [UdonSynced] public CardColor CardColor;
+        [Tooltip("These are un-used at the moment!")]
+        [UdonSynced] public CardNum CardNumber;
+        [Tooltip("These are un-used at the moment!")]
+        [UdonSynced] public CardState CardState;
+        
+        private bool _isReverseCard
+        {
+            get
+            {
+                if(CardNumber == CardNum.Reverse)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
 
         [Header("Ownership visuals")]
         public bool HideFromNonOwners = true;

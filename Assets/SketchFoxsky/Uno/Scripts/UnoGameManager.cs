@@ -1,4 +1,5 @@
-﻿using UdonSharp;
+﻿using TMPro;
+using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon.Common.Interfaces;
@@ -35,6 +36,16 @@ namespace SketchFoxsky.Uno
         [Header("Tick Rates")]
         public float ClientLayoutTick = 0.15f;
         public float MasterTick = 0.20f;
+
+        [Header("Un-Used Fields")]
+        public Animator TurnIdicator;
+        public string AnimatorBool = "Reverse";
+        public TextMeshPro LastPlayedPlayer;
+        public AudioClip StartingCardsDeal;
+        public AudioClip CardDraw;
+        public AudioClip SuccessfulPlay;
+        public AudioClip FailedPlay;
+        public AudioSource AudioSource;
 
         #endregion
 
