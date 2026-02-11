@@ -22,6 +22,7 @@ namespace SketchFoxsky.Uno
         public UnoPlayerHand[] unoPlayers;
 
         [Header("Rules")]
+        public bool TurnAndCardValidation;
         public int MaxCardsPerHand = 30;
 
         [Header("Dealing")]
