@@ -1084,6 +1084,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 753823530150721235, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
+    - target: {fileID: 771467438102561324, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 3614de97d883f7f47b3171e57f18cebd,
+        type: 3}
     - target: {fileID: 1022542384861924420, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
       propertyPath: CardColor
@@ -1209,6 +1215,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1576057617483804553, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
+    - target: {fileID: 1611078617618309536, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 3614de97d883f7f47b3171e57f18cebd,
+        type: 3}
     - target: {fileID: 1613227476086623078, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
       propertyPath: CardNumber
@@ -1302,6 +1314,12 @@ PrefabInstance:
       propertyPath: serializationData.Prefab
       value: 
       objectReference: {fileID: 2366381311341661858, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+    - target: {fileID: 2421524314280000977, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: f0cad2a21273a1b408fd879f158fe4f0,
         type: 3}
     - target: {fileID: 2477699909882259475, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
@@ -1596,6 +1614,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 3776290900514934811, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
+    - target: {fileID: 3794249507114504667, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 3614de97d883f7f47b3171e57f18cebd,
+        type: 3}
     - target: {fileID: 3830033281295834686, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
       propertyPath: CardColor
@@ -1611,6 +1635,12 @@ PrefabInstance:
       propertyPath: serializationData.Prefab
       value: 
       objectReference: {fileID: 3830033281295834686, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+    - target: {fileID: 3836355523798062998, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: f0cad2a21273a1b408fd879f158fe4f0,
         type: 3}
     - target: {fileID: 4058058277993624083, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
@@ -1757,6 +1787,24 @@ PrefabInstance:
       propertyPath: serializationData.Prefab
       value: 
       objectReference: {fileID: 4728237751763346065, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+    - target: {fileID: 4788325357486093133, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 3614de97d883f7f47b3171e57f18cebd,
+        type: 3}
+    - target: {fileID: 4797497266492951608, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: f0cad2a21273a1b408fd879f158fe4f0,
+        type: 3}
+    - target: {fileID: 4819418408842399889, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: f0cad2a21273a1b408fd879f158fe4f0,
         type: 3}
     - target: {fileID: 4822514011504429087, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
@@ -1944,6 +1992,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 5749641899597301927, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
+    - target: {fileID: 5845590351359366969, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: f0cad2a21273a1b408fd879f158fe4f0,
+        type: 3}
     - target: {fileID: 5947499685271572929, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
       propertyPath: CardColor
@@ -1960,11 +2014,23 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 5947499685271572929, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
+    - target: {fileID: 5980947420202879176, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: f0cad2a21273a1b408fd879f158fe4f0,
+        type: 3}
     - target: {fileID: 6007824916111103663, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
       propertyPath: serializationData.Prefab
       value: 
       objectReference: {fileID: 6007824916111103663, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+    - target: {fileID: 6016247241050903230, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 3614de97d883f7f47b3171e57f18cebd,
         type: 3}
     - target: {fileID: 6021844717953566444, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
@@ -2067,6 +2133,12 @@ PrefabInstance:
       propertyPath: serializationData.Prefab
       value: 
       objectReference: {fileID: 6334020657095679959, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+    - target: {fileID: 6423793561050892268, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: f0cad2a21273a1b408fd879f158fe4f0,
         type: 3}
     - target: {fileID: 6444902421657734278, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
@@ -2191,6 +2263,12 @@ PrefabInstance:
       propertyPath: serializationData.Prefab
       value: 
       objectReference: {fileID: 6726685745152398222, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+    - target: {fileID: 6729163459308197404, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: f0cad2a21273a1b408fd879f158fe4f0,
         type: 3}
     - target: {fileID: 6752383097920643982, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
@@ -2536,6 +2614,18 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8677914849023327773, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
+    - target: {fileID: 8685353467382866019, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 3614de97d883f7f47b3171e57f18cebd,
+        type: 3}
+    - target: {fileID: 8790870814198173177, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 3614de97d883f7f47b3171e57f18cebd,
+        type: 3}
     - target: {fileID: 8890502673659261123, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
       propertyPath: CardNumber
@@ -2601,6 +2691,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 9175478444872175673, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
+    - target: {fileID: 9201685079885072410, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 3614de97d883f7f47b3171e57f18cebd,
+        type: 3}
     - target: {fileID: 9204009830838048013, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
       propertyPath: serializationData.Prefab
@@ -2625,11 +2721,7 @@ PrefabInstance:
         type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 5361557169251247743, guid: 0f1fdb822fcf8c54188a3ae511a36010,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1942052242}
+    m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1542331454360032066, guid: 0f1fdb822fcf8c54188a3ae511a36010,
         type: 3}
@@ -2663,13 +2755,15 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 2971589081289331183, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 5671714713907386680, guid: 0f1fdb822fcf8c54188a3ae511a36010,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 0f1fdb822fcf8c54188a3ae511a36010, type: 3}
---- !u!4 &1746350106 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5361557169251247743, guid: 0f1fdb822fcf8c54188a3ae511a36010,
-    type: 3}
-  m_PrefabInstance: {fileID: 1746350105}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1751556606 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6873270337129902337, guid: 0f1fdb822fcf8c54188a3ae511a36010,
@@ -2848,111 +2942,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 1746350105}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1942052241
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1942052242}
-  - component: {fileID: 1942052245}
-  - component: {fileID: 1942052244}
-  - component: {fileID: 1942052243}
-  m_Layer: 0
-  m_Name: TurnIndicator
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1942052242
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1942052241}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.70710677, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 1.1975, z: 0}
-  m_LocalScale: {x: 1.4, y: 1.4, z: 1.4}
-  m_ConstrainProportionsScale: 1
-  m_Children: []
-  m_Father: {fileID: 1746350106}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!95 &1942052243
-Animator:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1942052241}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 86ccf1297c57b6c4ebb7d10c1b9bce7c, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
---- !u!23 &1942052244
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1942052241}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: feda0aeb63d6e184bafa6d59955ef5e3, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &1942052245
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1942052241}
-  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &1945310993 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2996891328015374209, guid: 0f1fdb822fcf8c54188a3ae511a36010,
