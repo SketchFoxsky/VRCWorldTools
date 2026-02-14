@@ -1076,9 +1076,18 @@ namespace SketchFoxsky.Uno
                     // otherwise start fresh.
                     // e.g. +2 -> +2 = 4 draws, +4 -> +4 = 8 draws
                     if (_actionCardPending)
-                        _pendingDrawCount += newDraws;
+                    {
+                        // Only stack same action types silly
+                        if (c.CardNumber == _pendingActionType)
+                        {
+                            _pendingDrawCount += newDraws;
+                        }
+                    }
                     else
+                    {
                         _pendingDrawCount = newDraws;
+                        _pendingActionType = c.CardNumber;
+                    }
 
                     // Advance to the next player and give them a timed
                     // window before they are skipped / forced to draw.
@@ -1092,6 +1101,7 @@ namespace SketchFoxsky.Uno
                 else
                 {
                     _actionCardPending = false;
+                    _pendingActionType = CardNum.None;
                     AdvanceTurnMaster();
                 }
             }
@@ -1111,6 +1121,7 @@ namespace SketchFoxsky.Uno
                     _currentTurnSeat = -1;
                     _actionCardPending = false;
                     _pendingDrawCount = 0;
+                    _pendingActionType = CardNum.None;
                     _unoCalledSeat = -1;
                     _unoChallengeActive = false;
                     _unoVulnerableSeat = -1;

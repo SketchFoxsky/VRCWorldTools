@@ -60,20 +60,6 @@ namespace SketchFoxsky.Uno
         [UdonSynced] public CardNum CardNumber;
         [UdonSynced] public CardState CardState;
         
-        private bool _isReverseCard
-        {
-            get
-            {
-                if(CardNumber == CardNum.Reverse)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
 
         [Header("Ownership visuals")]
         public bool HideFromNonOwners = true;
