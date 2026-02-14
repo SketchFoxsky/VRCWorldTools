@@ -24,6 +24,12 @@ namespace SketchFoxsky.Uno
         [Header("Rules")]
         public bool TurnAndCardValidation;
         public int MaxCardsPerHand = 30;
+        [Tooltip("Seconds the next player has to counter a Skip / +2 / +4 before being skipped.")]
+        public float ActionCardCounterWindow = 5f;
+        [Tooltip("When enabled, drawing a card does not end the turn. The player can keep drawing until they have a playable card.")]
+        public bool DrawUntilPlayable;
+        [Tooltip("Seconds other players have to challenge a player who forgot to call UNO.")]
+        public float UnoChallengeWindow = 5f;
 
         [Header("Dealing")]
         public int StartingHandSize = 7;
@@ -38,15 +44,24 @@ namespace SketchFoxsky.Uno
         public float ClientLayoutTick = 0.15f;
         public float MasterTick = 0.20f;
 
-        [Header("Un-Used Fields")]
-        public Animator TurnIdicator;
+        [Header("Turn & Audio")]
+        public Animator TurnOrder;
         public string AnimatorBool = "Reverse";
+        public Transform LastPlayedPlayerTransform;
         public TextMeshPro LastPlayedPlayer;
         public AudioClip StartingCardsDeal;
         public AudioClip CardDraw;
         public AudioClip SuccessfulPlay;
         public AudioClip FailedPlay;
+        public AudioClip ActionCardCountdown;
+        public AudioClip UnoCallSound;
+        public AudioClip UnoChallengeSound;
+        public AudioClip WinSound;
         public AudioSource AudioSource;
+
+        [Header("Winner Display")]
+        public Transform WinnerDisplayTransform;
+        public TextMeshPro WinnerDisplayText;
 
         #endregion
 
@@ -56,6 +71,14 @@ namespace SketchFoxsky.Uno
         [UdonSynced] private int _lastPlayedCardIndex = -1;
         [UdonSynced] private bool _matchStarted;
         [UdonSynced] private int _stateSeq;
+        [UdonSynced] private int _currentTurnSeat = -1;
+        [UdonSynced] private int _turnDirection = 1; // 1 = clockwise, -1 = counter-clockwise
+        [UdonSynced] private bool _actionCardPending; // true while waiting for counter play
+        [UdonSynced] private string _lastPlayedPlayerName = "";
+        [UdonSynced] private int _unoCalledSeat = -1;          // seat that pressed UNO button
+        [UdonSynced] private bool _unoChallengeActive;          // true while challenge window is open
+        [UdonSynced] private int _unoVulnerableSeat = -1;       // seat that forgot to call UNO
+        [UdonSynced] private string _winnerName = "";               // non-empty while winner display is shown
 
         #endregion
 
@@ -73,6 +96,9 @@ namespace SketchFoxsky.Uno
 
         private float _masterTimer;
         private float _clientTimer;
+        private float _actionCardDeadline; // master-only: Time.time when counter window expires
+        private int _pendingDrawCount;     // master-only: cards the threatened player must draw (2 for +2, 4 for +4, 0 for Skip)
+        private float _unoChallengeDeadline; // master-only: Time.time when UNO challenge window expires
         #endregion
 
         #region Unity/VRChat LifeCycles
@@ -163,6 +189,22 @@ namespace SketchFoxsky.Uno
             {
                 if (_playerIds[seat] == pid)
                 {
+                    // If it was this player's turn, advance before clearing
+                    if (TurnAndCardValidation && _matchStarted && seat == _currentTurnSeat)
+                    {
+                        _actionCardPending = false;
+                        _pendingDrawCount = 0;
+                        AdvanceTurnMaster();
+                    }
+
+                    // Clear UNO state if the leaving player was involved
+                    if (_unoCalledSeat == seat) _unoCalledSeat = -1;
+                    if (_unoVulnerableSeat == seat)
+                    {
+                        _unoChallengeActive = false;
+                        _unoVulnerableSeat = -1;
+                    }
+
                     ClearSeatMaster(seat);
                     changed = true;
                 }
@@ -191,6 +233,32 @@ namespace SketchFoxsky.Uno
                     _masterTimer = 0f;
 
                     bool changed = false;
+
+                    // Action card counter window expired — draw penalty cards, then skip
+                    if (_actionCardPending && Time.time >= _actionCardDeadline)
+                    {
+                        _actionCardPending = false;
+
+                        // Auto-draw penalty cards for the threatened player
+                        for (int d = 0; d < _pendingDrawCount; d++)
+                        {
+                            DrawCardToSeatMaster(_currentTurnSeat);
+                            SendCustomNetworkEvent(NetworkEventTarget.All, nameof(PlayCardDrawSound));
+                        }
+                        _pendingDrawCount = 0;
+
+                        AdvanceTurnMaster();
+                        changed = true;
+                    }
+
+                    // UNO challenge window expired — player is safe
+                    if (_unoChallengeActive && Time.time >= _unoChallengeDeadline)
+                    {
+                        _unoChallengeActive = false;
+                        _unoVulnerableSeat = -1;
+                        changed = true;
+                    }
+
                     if (ProcessRelayRequestsMaster()) changed = true;
                     if (ProcessPlayRequestsMaster()) changed = true;
 
@@ -209,6 +277,12 @@ namespace SketchFoxsky.Uno
                 _clientTimer = 0f;
                 ApplyStateToScene(force: false);
             }
+
+            // Billboard the last-played-player name toward the local player
+            BillboardLastPlayedPlayer();
+
+            // Billboard the winner display toward the local player
+            BillboardWinnerDisplay();
         }
 
         #endregion
@@ -227,8 +301,65 @@ namespace SketchFoxsky.Uno
 
             int seat = FindSeatOfPlayer(Networking.LocalPlayer.playerId);
             if (seat < 0) return false;
+            if (FindCardSlotInSeat(seat, cardId) < 0) return false;
 
-            return FindCardSlotInSeat(seat, cardId) >= 0;
+            if (TurnAndCardValidation)
+            {
+                if (seat != _currentTurnSeat) return false;
+                if (!IsCardValidPlay(cardId)) return false;
+
+                // During a counter window only Skip / +2 / +4 cards may be played
+                if (_actionCardPending)
+                {
+                    UnoCard card = unoCards[cardId];
+                    if (card != null && !IsActionCard(card.CardNumber))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        public bool IsCardValidPlay(int cardIndex)
+        {
+            if (unoCards == null || cardIndex < 0 || cardIndex >= unoCards.Length) return false;
+
+            UnoCard card = unoCards[cardIndex];
+            if (card == null) return false;
+
+            // Wild cards are always valid
+            if (card.CardNumber == CardNum.Wild || card.CardNumber == CardNum.WildPlusFour)
+                return true;
+
+            // No last played card, anything goes
+            if (_lastPlayedCardIndex < 0 || _lastPlayedCardIndex >= unoCards.Length) return true;
+
+            UnoCard lastCard = unoCards[_lastPlayedCardIndex];
+            if (lastCard == null) return true;
+
+            // Wild on top, any card can follow
+            if (lastCard.CardNumber == CardNum.Wild || lastCard.CardNumber == CardNum.WildPlusFour)
+                return true;
+
+            // Match color
+            if (card.CardColor == lastCard.CardColor) return true;
+
+            // Match number / type
+            if (card.CardNumber == lastCard.CardNumber) return true;
+
+            return false;
+        }
+
+        public bool IsLocalPlayersTurn()
+        {
+            if (Networking.LocalPlayer == null) return false;
+            int seat = FindSeatOfPlayer(Networking.LocalPlayer.playerId);
+            return seat >= 0 && seat == _currentTurnSeat;
+        }
+
+        public int GetCurrentTurnSeat()
+        {
+            return _currentTurnSeat;
         }
 
         public void ProcessRelayRequestsOwner()
@@ -243,6 +374,69 @@ namespace SketchFoxsky.Uno
             }
 
             ApplyStateToScene(force: true);
+        }
+
+        private int FindNextOccupiedSeat(int fromSeat)
+        {
+            for (int i = 1; i <= _seatCount; i++)
+            {
+                int seat = ((fromSeat + i * _turnDirection) % _seatCount + _seatCount) % _seatCount;
+                if (_playerIds[seat] != -1) return seat;
+            }
+            return -1;
+        }
+
+        private void AdvanceTurnMaster()
+        {
+            if (_currentTurnSeat < 0) return;
+            int next = FindNextOccupiedSeat(_currentTurnSeat);
+            if (next >= 0) _currentTurnSeat = next;
+        }
+
+        private bool IsActionCard(CardNum num)
+        {
+            return num == CardNum.Skip || num == CardNum.PlusTwo || num == CardNum.WildPlusFour;
+        }
+
+        private int CountCardsInSeat(int seat)
+        {
+            int count = 0;
+            for (int slot = 0; slot < _handCapacity; slot++)
+            {
+                if (_handCardIndex[HandIndex(seat, slot)] != -1)
+                    count++;
+            }
+            return count;
+        }
+
+        private void BillboardLastPlayedPlayer()
+        {
+            if (LastPlayedPlayerTransform == null || Networking.LocalPlayer == null) return;
+
+            var head = Networking.LocalPlayer.GetTrackingData(VRCPlayerApi.TrackingDataType.Head);
+            Vector3 toHead = head.position - LastPlayedPlayerTransform.transform.position;
+            toHead.y = 0f;
+
+            if (toHead.sqrMagnitude > 0.0001f)
+            {
+                Quaternion look = Quaternion.LookRotation(toHead.normalized, Vector3.up);
+                LastPlayedPlayerTransform.transform.rotation = look;
+            }
+        }
+
+        private void BillboardWinnerDisplay()
+        {
+            if (WinnerDisplayTransform == null || Networking.LocalPlayer == null) return;
+
+            var head = Networking.LocalPlayer.GetTrackingData(VRCPlayerApi.TrackingDataType.Head);
+            Vector3 toHead = head.position - WinnerDisplayTransform.position;
+            toHead.y = 0f;
+
+            if (toHead.sqrMagnitude > 0.0001f)
+            {
+                Quaternion look = Quaternion.LookRotation(toHead.normalized, Vector3.up);
+                WinnerDisplayTransform.rotation = look;
+            }
         }
 
         private void ReinsertCardIntoDeck(int cardIndex)
@@ -287,6 +481,18 @@ namespace SketchFoxsky.Uno
             if (_matchStarted) return;
 
             _matchStarted = true;
+            _turnDirection = 1;
+            _actionCardPending = false;
+            _pendingDrawCount = 0;
+            _lastPlayedPlayerName = "";
+            _unoCalledSeat = -1;
+            _unoChallengeActive = false;
+            _unoVulnerableSeat = -1;
+            _winnerName = "";
+
+            // Reset turn indicator to clockwise
+            if (TurnOrder != null)
+                TurnOrder.SetBool(AnimatorBool, false);
 
             // Deal starting hands
             for (int seat = 0; seat < _seatCount; seat++)
@@ -317,13 +523,58 @@ namespace SketchFoxsky.Uno
                             );
 
                         _lastPlayedCardIndex = first;
+
+                        // If the first pile card is a Reverse, start counter-clockwise
+                        if (TurnAndCardValidation && c.CardNumber == CardNum.Reverse)
+                        {
+                            _turnDirection = -1;
+                            if (TurnOrder != null)
+                                TurnOrder.SetBool(AnimatorBool, true);
+                        }
                     }
+                }
+            }
+
+            // Set initial turn to a random occupied seat
+            if (TurnAndCardValidation)
+            {
+                int occupiedCount = 0;
+                for (int seat = 0; seat < _seatCount; seat++)
+                {
+                    if (_playerIds[seat] != -1)
+                        occupiedCount++;
+                }
+
+                if (occupiedCount > 0)
+                {
+                    int pick = Random.Range(0, occupiedCount);
+                    int idx = 0;
+                    _currentTurnSeat = -1;
+                    for (int seat = 0; seat < _seatCount; seat++)
+                    {
+                        if (_playerIds[seat] != -1)
+                        {
+                            if (idx == pick)
+                            {
+                                _currentTurnSeat = seat;
+                                break;
+                            }
+                            idx++;
+                        }
+                    }
+                }
+                else
+                {
+                    _currentTurnSeat = -1;
                 }
             }
 
             _stateSeq++;
             RequestSerialization();
             ApplyStateToScene(force: true);
+
+            // Starting deal sound for all clients
+            SendCustomNetworkEvent(NetworkEventTarget.All, nameof(PlayStartingDealSound));
         }
 
         public void ResetMatchButton()
@@ -341,8 +592,21 @@ namespace SketchFoxsky.Uno
 
             // Reset match state and return all cards to deck
             _matchStarted = false;
+            _currentTurnSeat = -1;
+            _turnDirection = 1;
+            _actionCardPending = false;
+            _pendingDrawCount = 0;
+            _lastPlayedPlayerName = "";
+            _unoCalledSeat = -1;
+            _unoChallengeActive = false;
+            _unoVulnerableSeat = -1;
+            _winnerName = "";
             InitDeckOrder();
             ResetAllCardsToDeckMaster();
+
+            // Reset turn indicator
+            if (TurnOrder != null)
+                TurnOrder.SetBool(AnimatorBool, false);
 
             _stateSeq++;
             RequestSerialization();
@@ -412,6 +676,7 @@ namespace SketchFoxsky.Uno
 
                 c.IsInPlayedSlot = false;
                 c.PlayRequested = false;
+                c.CardState = CardState.InDeck;
                 c.RequestSerialization();
 
                 c.transform.SetPositionAndRotation(DeckTransform.position, DeckTransform.rotation);
@@ -552,16 +817,58 @@ namespace SketchFoxsky.Uno
                 {
                     if (_playerIds[seat] == -1 || _playerIds[seat] == pid)
                     {
+                        bool isNewJoin = _playerIds[seat] == -1;
                         _playerIds[seat] = pid;
                         changed = true;
+
+                        // Deal starting hand if joining mid-game
+                        if (isNewJoin && _matchStarted)
+                        {
+                            for (int d = 0; d < StartingHandSize; d++)
+                                DrawCardToSeatMaster(seat);
+
+                            SendCustomNetworkEvent(NetworkEventTarget.All, nameof(PlayStartingDealSound));
+                        }
                     }
                 }
                 else if (type == 2)
                 {
                     if (_matchStarted && _playerIds[seat] == pid)
                     {
+                        // When validation is on, only allow drawing on your turn
+                        if (TurnAndCardValidation && seat != _currentTurnSeat)
+                            continue;
+
                         DrawCardToSeatMaster(seat);
                         changed = true;
+
+                        // Draw card sound for all clients
+                        SendCustomNetworkEvent(NetworkEventTarget.All, nameof(PlayCardDrawSound));
+
+                        if (TurnAndCardValidation)
+                        {
+                            // Drawing during a counter window forfeits the counter
+                            if (_actionCardPending)
+                            {
+                                _actionCardPending = false;
+
+                                // The manual draw counts as one; draw the rest of the penalty
+                                for (int d = 1; d < _pendingDrawCount; d++)
+                                {
+                                    DrawCardToSeatMaster(seat);
+                                    SendCustomNetworkEvent(NetworkEventTarget.All, nameof(PlayCardDrawSound));
+                                }
+                                _pendingDrawCount = 0;
+
+                                AdvanceTurnMaster();
+                            }
+                            else if (!DrawUntilPlayable)
+                            {
+                                // Drawing ends your turn
+                                AdvanceTurnMaster();
+                            }
+                            // else: DrawUntilPlayable, player keeps their turn
+                        }
                     }
                 }
                 else if (type == 3)
@@ -570,6 +877,38 @@ namespace SketchFoxsky.Uno
                     {
                         ClearSeatMaster(seat);
                         changed = true;
+                    }
+                }
+                else if (type == 4)
+                {
+                    // UNO call, record that this seat called UNO
+                    if (_matchStarted && _playerIds[seat] == pid)
+                    {
+                        _unoCalledSeat = seat;
+                        changed = true;
+
+                        SendCustomNetworkEvent(NetworkEventTarget.All, nameof(PlayUnoCallSound));
+                    }
+                }
+                else if (type == 5)
+                {
+                    // UNO challenge, any seated player can challenge the vulnerable seat
+                    if (_matchStarted && _playerIds[seat] == pid && _unoChallengeActive && seat != _unoVulnerableSeat)
+                    {
+                        _unoChallengeActive = false;
+
+                        // Force the vulnerable player to draw 2 cards
+                        if (_unoVulnerableSeat >= 0 && _unoVulnerableSeat < _seatCount && _playerIds[_unoVulnerableSeat] != -1)
+                        {
+                            DrawCardToSeatMaster(_unoVulnerableSeat);
+                            DrawCardToSeatMaster(_unoVulnerableSeat);
+                            SendCustomNetworkEvent(NetworkEventTarget.All, nameof(PlayCardDrawSound));
+                        }
+
+                        _unoVulnerableSeat = -1;
+                        changed = true;
+
+                        SendCustomNetworkEvent(NetworkEventTarget.All, nameof(PlayUnoChallengeSound));
                     }
                 }
             }
@@ -591,6 +930,61 @@ namespace SketchFoxsky.Uno
                 if (c == null) continue;
                 if (!c.PlayRequested) continue;
 
+                if (TurnAndCardValidation)
+                {
+                    // Find which seat owns this card
+                    int seat = -1;
+                    for (int s = 0; s < _seatCount; s++)
+                    {
+                        if (FindCardSlotInSeat(s, i) >= 0)
+                        {
+                            seat = s;
+                            break;
+                        }
+                    }
+
+                    // Deny: wrong turn or invalid card
+                    if (seat < 0 || seat != _currentTurnSeat || !IsCardValidPlay(i))
+                    {
+                        int pid = (seat >= 0) ? _playerIds[seat] : -1;
+
+                        Networking.SetOwner(Networking.LocalPlayer, c.gameObject);
+                        c.PlayRequested = false;
+                        c.IsInPlayedSlot = false;
+                        c.RequestSerialization();
+
+                        // Return ownership to the player
+                        if (pid >= 0)
+                        {
+                            VRCPlayerApi p = VRCPlayerApi.GetPlayerById(pid);
+                            if (p != null && p.IsValid())
+                                Networking.SetOwner(p, c.gameObject);
+                        }
+
+                        return true;
+                    }
+
+                    // Deny: action window active but card is not a valid action card
+                    if (_actionCardPending && !IsActionCard(c.CardNumber))
+                    {
+                        int pid2 = (seat >= 0) ? _playerIds[seat] : -1;
+
+                        Networking.SetOwner(Networking.LocalPlayer, c.gameObject);
+                        c.PlayRequested = false;
+                        c.IsInPlayedSlot = false;
+                        c.RequestSerialization();
+
+                        if (pid2 >= 0)
+                        {
+                            VRCPlayerApi p2 = VRCPlayerApi.GetPlayerById(pid2);
+                            if (p2 != null && p2.IsValid())
+                                Networking.SetOwner(p2, c.gameObject);
+                        }
+
+                        return true;
+                    }
+                }
+
                 AcceptPlayedCardMaster(i);
                 return true;
             }
@@ -602,6 +996,26 @@ namespace SketchFoxsky.Uno
         {
             if (!Networking.IsMaster) return;
             if (unoCards == null || newIndex < 0 || newIndex >= unoCards.Length) return;
+
+            // Identify who played this card before clearing hand data
+            int playedSeat = -1;
+            for (int s = 0; s < _seatCount; s++)
+            {
+                if (FindCardSlotInSeat(s, newIndex) >= 0)
+                {
+                    playedSeat = s;
+                    break;
+                }
+            }
+            if (playedSeat >= 0 && _playerIds[playedSeat] >= 0)
+            {
+                VRCPlayerApi who = VRCPlayerApi.GetPlayerById(_playerIds[playedSeat]);
+                _lastPlayedPlayerName = (who != null && who.IsValid()) ? who.displayName : "";
+            }
+            else
+            {
+                _lastPlayedPlayerName = "";
+            }
 
             if (_lastPlayedCardIndex != -1 && _lastPlayedCardIndex != newIndex)
                 ReturnCardToDeckMaster(_lastPlayedCardIndex);
@@ -630,6 +1044,111 @@ namespace SketchFoxsky.Uno
             }
 
             _lastPlayedCardIndex = newIndex;
+
+            if (TurnAndCardValidation)
+            {
+                // Reverse card flips turn direction
+                if (c.CardNumber == CardNum.Reverse)
+                {
+                    _turnDirection *= -1;
+                    if (TurnOrder != null)
+                        TurnOrder.SetBool(AnimatorBool, _turnDirection < 0);
+                }
+
+                if (IsActionCard(c.CardNumber))
+                {
+                    // Determine draw penalty for this card
+                    int newDraws = 0;
+                    if (c.CardNumber == CardNum.PlusTwo)
+                        newDraws = 2;
+                    else if (c.CardNumber == CardNum.WildPlusFour)
+                        newDraws = 4;
+
+                    // Stack draws if countering an existing action card,
+                    // otherwise start fresh.
+                    // e.g. +2 -> +2 = 4 draws, +4 -> +4 = 8 draws
+                    if (_actionCardPending)
+                        _pendingDrawCount += newDraws;
+                    else
+                        _pendingDrawCount = newDraws;
+
+                    // Advance to the next player and give them a timed
+                    // window before they are skipped / forced to draw.
+                    AdvanceTurnMaster();
+                    _actionCardPending = true;
+                    _actionCardDeadline = Time.time + ActionCardCounterWindow;
+
+                    // Countdown sound for all clients
+                    SendCustomNetworkEvent(NetworkEventTarget.All, nameof(PlayActionCardCountdownSound));
+                }
+                else
+                {
+                    _actionCardPending = false;
+                    AdvanceTurnMaster();
+                }
+            }
+
+            // Win / UNO check
+            if (TurnAndCardValidation && playedSeat >= 0)
+            {
+                int remaining = CountCardsInSeat(playedSeat);
+
+                if (remaining == 0)
+                {
+                    // WINNER
+                    _winnerName = _lastPlayedPlayerName;
+
+                    // End the match but keep players seated
+                    _matchStarted = false;
+                    _currentTurnSeat = -1;
+                    _actionCardPending = false;
+                    _pendingDrawCount = 0;
+                    _unoCalledSeat = -1;
+                    _unoChallengeActive = false;
+                    _unoVulnerableSeat = -1;
+
+                    // Return all hand cards to deck (keep last played visible briefly)
+                    for (int seat = 0; seat < _seatCount; seat++)
+                    {
+                        for (int slot = 0; slot < _handCapacity; slot++)
+                        {
+                            int ci = _handCardIndex[HandIndex(seat, slot)];
+                            if (ci >= 0 && ci < unoCards.Length)
+                                ReturnCardToDeckMaster(ci);
+                        }
+                    }
+
+                    // Successful play + win sound
+                    SendCustomNetworkEvent(NetworkEventTarget.All, nameof(PlaySuccessfulPlaySound));
+                    SendCustomNetworkEvent(NetworkEventTarget.All, nameof(PlayWinSound));
+                    return;
+                }
+
+                if (remaining == 1)
+                {
+                    if (_unoCalledSeat == playedSeat)
+                    {
+                        // They called UNO
+                        _unoCalledSeat = -1;
+                    }
+                    else
+                    {
+                        // Forgot to call UNO, open challenge window
+                        _unoChallengeActive = true;
+                        _unoVulnerableSeat = playedSeat;
+                        _unoChallengeDeadline = Time.time + UnoChallengeWindow;
+                    }
+                }
+                else
+                {
+                    // Not at 1 card, reset any stale UNO calls for this seat
+                    if (_unoCalledSeat == playedSeat)
+                        _unoCalledSeat = -1;
+                }
+            }
+
+            // Successful play sound for all clients
+            SendCustomNetworkEvent(NetworkEventTarget.All, nameof(PlaySuccessfulPlaySound));
         }
         #endregion
 
@@ -639,7 +1158,23 @@ namespace SketchFoxsky.Uno
         {
             EnsureArrays();
 
-            // Seat UI
+            // Sync turn indicator animator on all clients
+            if (TurnOrder != null)
+                TurnOrder.SetBool(AnimatorBool, _turnDirection < 0);
+
+            // Display last played player name
+            if (LastPlayedPlayer != null)
+                LastPlayedPlayer.text = _lastPlayedPlayerName;
+
+            // Winner display: show "PlayerName Wins!" while _winnerName is set
+            bool hasWinner = !string.IsNullOrEmpty(_winnerName);
+            if (WinnerDisplayText != null)
+                WinnerDisplayText.text = hasWinner ? _winnerName + "\nWins!" : "";
+            if (WinnerDisplayTransform != null)
+                WinnerDisplayTransform.gameObject.SetActive(hasWinner);
+
+            // Seat UI + UNO button visibility
+            int localPid = (Networking.LocalPlayer != null) ? Networking.LocalPlayer.playerId : -1;
             for (int seat = 0; seat < _seatCount; seat++)
             {
                 UnoPlayerHand hand = unoPlayers[seat];
@@ -648,6 +1183,20 @@ namespace SketchFoxsky.Uno
                 int pid = _playerIds[seat];
                 if (pid == -1) hand.ClearPlayer();
                 else hand.SetPlayer(VRCPlayerApi.GetPlayerById(pid));
+
+                // UNO call button: show on the local player's hand when they have exactly 2 cards
+                if (hand.UnoCallButtonObject != null)
+                {
+                    bool showUnoCall = _matchStarted && pid == localPid && pid != -1 && CountCardsInSeat(seat) == 2;
+                    hand.UnoCallButtonObject.SetActive(showUnoCall);
+                }
+
+                // UNO challenge button: show for all seated players except the vulnerable one
+                if (hand.UnoChallengeButtonObject != null)
+                {
+                    bool showChallenge = _matchStarted && _unoChallengeActive && pid == localPid && pid != -1 && seat != _unoVulnerableSeat;
+                    hand.UnoChallengeButtonObject.SetActive(showChallenge);
+                }
             }
 
             if (unoCards == null || unoCards.Length == 0) return;
@@ -684,13 +1233,16 @@ namespace SketchFoxsky.Uno
                     c.IsInPlayedSlot = true;
                     c.LocalPendingPlay = false;
                 }
+                else if (c.LocalPendingPlay && !c.PlayRequested)
+                {
+                    // Master denied the play, reset card for everyone
+                    c.IsInPlayedSlot = false;
+                    c.LocalPendingPlay = false;
+                    c.ResetPlayedAnimationState();
+                }
                 else if (!c.LocalPendingPlay)
                 {
-                    // Not the played card, and not mid-play animation.
-                    // Cards with LocalPendingPlay are flying to the played
-                    // slot and haven't been confirmed by master yet — leave
-                    // their IsInPlayedSlot / animation state untouched so the
-                    // fly animation isn't interrupted.
+                    // Stale Animation prevention
                     c.IsInPlayedSlot = false;
 
                     // CRITICAL: clear stale played animation
@@ -790,6 +1342,58 @@ namespace SketchFoxsky.Uno
                     );
                 }
             }
+        }
+
+        #endregion
+
+        #region Audio
+
+        public void PlaySuccessfulPlaySound()
+        {
+            if (AudioSource != null && SuccessfulPlay != null)
+                AudioSource.PlayOneShot(SuccessfulPlay);
+        }
+
+        public void PlayFailedPlaySound()
+        {
+            if (AudioSource != null && FailedPlay != null)
+                AudioSource.PlayOneShot(FailedPlay);
+        }
+
+        public void PlayCardDrawSound()
+        {
+            if (AudioSource != null && CardDraw != null)
+                AudioSource.PlayOneShot(CardDraw);
+        }
+
+        public void PlayStartingDealSound()
+        {
+            if (AudioSource != null && StartingCardsDeal != null)
+                AudioSource.PlayOneShot(StartingCardsDeal);
+        }
+
+        public void PlayActionCardCountdownSound()
+        {
+            if (AudioSource != null && ActionCardCountdown != null)
+                AudioSource.PlayOneShot(ActionCardCountdown);
+        }
+
+        public void PlayUnoCallSound()
+        {
+            if (AudioSource != null && UnoCallSound != null)
+                AudioSource.PlayOneShot(UnoCallSound);
+        }
+
+        public void PlayUnoChallengeSound()
+        {
+            if (AudioSource != null && UnoChallengeSound != null)
+                AudioSource.PlayOneShot(UnoChallengeSound);
+        }
+
+        public void PlayWinSound()
+        {
+            if (AudioSource != null && WinSound != null)
+                AudioSource.PlayOneShot(WinSound);
         }
 
         #endregion

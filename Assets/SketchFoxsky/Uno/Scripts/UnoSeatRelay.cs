@@ -14,7 +14,7 @@ namespace SketchFoxsky.Uno
 
         [Header("Synced Request")]
         [UdonSynced] public int RequestSeq;
-        [UdonSynced] public int RequestType;     // 1 = Join, 2 = Deal
+        [UdonSynced] public int RequestType;     // 1 = Join, 2 = Deal, 3 = Leave, 4 = Call UNO, 5 = Challenge
         [UdonSynced] public int RequestPlayerId; // sender
 
         public void RequestJoin()
@@ -30,6 +30,16 @@ namespace SketchFoxsky.Uno
         public void RequestLeave()
         {
             SendRequest(3);
+        }
+
+        public void RequestCallUno()
+        {
+            SendRequest(4);
+        }
+
+        public void RequestChallengeUno()
+        {
+            SendRequest(5);
         }
 
         private void SendRequest(int type)

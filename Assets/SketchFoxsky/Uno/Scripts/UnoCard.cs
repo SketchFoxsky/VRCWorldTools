@@ -54,12 +54,9 @@ namespace SketchFoxsky.Uno
         [Header("Identity")]
         [UdonSynced] public int CardID;
 
-        [Header("Un-Used Identity")]
-        [Tooltip("These are un-used at the moment!")]
+        [Header("Card Identity")]
         [UdonSynced] public CardColor CardColor;
-        [Tooltip("These are un-used at the moment!")]
         [UdonSynced] public CardNum CardNumber;
-        [Tooltip("These are un-used at the moment!")]
         [UdonSynced] public CardState CardState;
         
         private bool _isReverseCard
@@ -284,14 +281,14 @@ namespace SketchFoxsky.Uno
             return _pickup != null && _pickup.IsHeld;
         }
 
-        // Hand placement (includes the "drop return" fix)
+        // Hand placement
         public void SetHandTarget(Vector3 pos, Quaternion rot, float duration)
         {
             CacheComponentsIfNeeded();
 
             if (_pickup != null && _pickup.IsHeld) return;
             if (IsInPlayedSlot) return;
-            if (LocalPendingPlay) return; // Never hand-layout a pending-play card
+            if (LocalPendingPlay) return; // Never handlayout a pending play card
 
             if (_hasLastHandTarget)
             {
@@ -396,7 +393,13 @@ namespace SketchFoxsky.Uno
             if (!Networking.IsOwner(gameObject)) return;
             if (_pickup == null || !_pickup.IsHeld) return;
             if (IsInPlayedSlot) return;
-            if (!Manager.CanLocalPlayCard(CardID)) return;
+
+            if (!Manager.CanLocalPlayCard(CardID))
+            {
+                // Play denied sound locally so the player gets immediate feedback
+                Manager.PlayFailedPlaySound();
+                return;
+            }
 
             // Drop immediately and disable pickup
             _pickup.Drop();
@@ -445,7 +448,6 @@ namespace SketchFoxsky.Uno
             // Safety: hand animation should be allowed again
             _handAnimating = false;
         }
-
 
     }
 }

@@ -36,6 +36,10 @@ namespace SketchFoxsky.Uno
         [Header("Extra rotation")]
         public Vector3 CardLocalEuler = Vector3.zero;
 
+        [Header("UNO Buttons")]
+        public GameObject UnoCallButtonObject;
+        public GameObject UnoChallengeButtonObject;
+
         [HideInInspector][UdonSynced] public int PlayerId = -1;
 
         // Hand Axis
@@ -81,6 +85,16 @@ namespace SketchFoxsky.Uno
         public void LeaveGameButton()
         {
             if (Relay != null) Relay.RequestLeave();
+        }
+
+        public void UnoCallButton()
+        {
+            if (Relay != null) Relay.RequestCallUno();
+        }
+
+        public void UnoChallengeButton()
+        {
+            if (Relay != null) Relay.RequestChallengeUno();
         }
 
         public void GetCardPose(int index, int count, out Vector3 worldPos, out Quaternion worldRot)
