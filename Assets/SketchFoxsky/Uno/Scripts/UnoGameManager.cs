@@ -47,8 +47,6 @@ namespace SketchFoxsky.Uno
         [Header("Turn & Audio")]
         public Animator TurnOrder;
         public string AnimatorBool = "Reverse";
-        public Transform LastPlayedPlayerTransform;
-        public TextMeshPro LastPlayedPlayer;
         public AudioClip StartingCardsDeal;
         public AudioClip CardDraw;
         public AudioClip SuccessfulPlay;
@@ -59,9 +57,9 @@ namespace SketchFoxsky.Uno
         public AudioClip WinSound;
         public AudioSource AudioSource;
 
-        [Header("Winner Display")]
-        public Transform WinnerDisplayTransform;
-        public TextMeshPro WinnerDisplayText;
+        [Header("Text Display")]
+        public Transform TextDisplayTransform;
+        public TextMeshPro TextDisplay;
 
         #endregion
 
@@ -280,11 +278,8 @@ namespace SketchFoxsky.Uno
                 ApplyStateToScene(force: false);
             }
 
-            // Billboard the last-played-player name toward the local player
-            BillboardLastPlayedPlayer();
-
-            // Billboard the winner display toward the local player
-            BillboardWinnerDisplay();
+            // Billboard the text display to the local player.
+            BillboardTextDisplay();
         }
 
         #endregion
@@ -310,17 +305,20 @@ namespace SketchFoxsky.Uno
                 if (seat != _currentTurnSeat) return false;
                 if (!IsCardValidPlay(cardId)) return false;
 
-                // During a counter window only Skip / +2 / +4 cards may be played
-                if (_actionCardPending)
+                // prevent local play from happening during action cards
+                if (_pendingActionType != CardNum.None)
                 {
                     UnoCard card = unoCards[cardId];
-                    if (card != null && !IsActionCard(card.CardNumber))
+                    if (card == null) return false;
+
+                    if (card.CardNumber != _pendingActionType)
                         return false;
                 }
             }
 
             return true;
         }
+
 
         public bool IsCardValidPlay(int cardIndex)
         {
@@ -411,33 +409,18 @@ namespace SketchFoxsky.Uno
             return count;
         }
 
-        private void BillboardLastPlayedPlayer()
+        private void BillboardTextDisplay()
         {
-            if (LastPlayedPlayerTransform == null || Networking.LocalPlayer == null) return;
+            if (TextDisplayTransform == null || Networking.LocalPlayer == null) return;
 
             var head = Networking.LocalPlayer.GetTrackingData(VRCPlayerApi.TrackingDataType.Head);
-            Vector3 toHead = head.position - LastPlayedPlayerTransform.transform.position;
+            Vector3 toHead = head.position - TextDisplayTransform.transform.position;
             toHead.y = 0f;
 
             if (toHead.sqrMagnitude > 0.0001f)
             {
                 Quaternion look = Quaternion.LookRotation(toHead.normalized, Vector3.up);
-                LastPlayedPlayerTransform.transform.rotation = look;
-            }
-        }
-
-        private void BillboardWinnerDisplay()
-        {
-            if (WinnerDisplayTransform == null || Networking.LocalPlayer == null) return;
-
-            var head = Networking.LocalPlayer.GetTrackingData(VRCPlayerApi.TrackingDataType.Head);
-            Vector3 toHead = head.position - WinnerDisplayTransform.position;
-            toHead.y = 0f;
-
-            if (toHead.sqrMagnitude > 0.0001f)
-            {
-                Quaternion look = Quaternion.LookRotation(toHead.normalized, Vector3.up);
-                WinnerDisplayTransform.rotation = look;
+                TextDisplayTransform.transform.rotation = look;
             }
         }
 
@@ -971,7 +954,7 @@ namespace SketchFoxsky.Uno
                     }
 
                     // Deny: action window active but card is not a valid action card
-               
+
                     if (_actionCardPending)
                     {
                         if (!IsActionCard(c.CardNumber) || c.CardNumber != _pendingActionType)
@@ -989,6 +972,8 @@ namespace SketchFoxsky.Uno
                                 if (p2 != null && p2.IsValid())
                                     Networking.SetOwner(p2, c.gameObject);
                             }
+
+                            return true;
                         }
                     }
                 }
@@ -1181,16 +1166,19 @@ namespace SketchFoxsky.Uno
             if (TurnOrder != null)
                 TurnOrder.SetBool(AnimatorBool, _turnDirection < 0);
 
-            // Display last played player name
-            if (LastPlayedPlayer != null)
-                LastPlayedPlayer.text = _lastPlayedPlayerName;
-
-            // Winner display: show "PlayerName Wins!" while _winnerName is set
-            bool hasWinner = !string.IsNullOrEmpty(_winnerName);
-            if (WinnerDisplayText != null)
-                WinnerDisplayText.text = hasWinner ? _winnerName + "\nWins!" : "";
-            if (WinnerDisplayTransform != null)
-                WinnerDisplayTransform.gameObject.SetActive(hasWinner);
+            // Display the text
+            if (TextDisplay != null)
+            {
+                if (!string.IsNullOrEmpty(_winnerName))
+                {
+                    // We override last played player text with winner text instead.
+                    TextDisplay.text = _winnerName + "\nWins!";
+                }
+                else
+                {
+                    TextDisplay.text = _lastPlayedPlayerName;
+                }
+            }
 
             // Seat UI + UNO button visibility
             int localPid = (Networking.LocalPlayer != null) ? Networking.LocalPlayer.playerId : -1;
