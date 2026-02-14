@@ -66,18 +66,19 @@ namespace SketchFoxsky.Uno
         #endregion
 
         #region Masters Variables
-        [UdonSynced] private int[] _playerIds;        // seat -> playerId (-1 empty)
-        [UdonSynced] private int[] _handCardIndex;    // seat*cap + slot -> cardIndex (-1 empty)
+        [UdonSynced] private int[] _playerIds;                      // seat -> playerId (-1 empty)
+        [UdonSynced] private int[] _handCardIndex;                  // seat*cap + slot -> cardIndex (-1 empty)
         [UdonSynced] private int _lastPlayedCardIndex = -1;
         [UdonSynced] private bool _matchStarted;
         [UdonSynced] private int _stateSeq;
         [UdonSynced] private int _currentTurnSeat = -1;
-        [UdonSynced] private int _turnDirection = 1; // 1 = clockwise, -1 = counter-clockwise
-        [UdonSynced] private bool _actionCardPending; // true while waiting for counter play
+        [UdonSynced] private int _turnDirection = 1;                // 1 = clockwise, -1 = counter-clockwise
+        [UdonSynced] private bool _actionCardPending;               // true while waiting for counter play
+        [UdonSynced] private CardNum _pendingActionType = CardNum.None;
         [UdonSynced] private string _lastPlayedPlayerName = "";
-        [UdonSynced] private int _unoCalledSeat = -1;          // seat that pressed UNO button
-        [UdonSynced] private bool _unoChallengeActive;          // true while challenge window is open
-        [UdonSynced] private int _unoVulnerableSeat = -1;       // seat that forgot to call UNO
+        [UdonSynced] private int _unoCalledSeat = -1;               // seat that pressed UNO button
+        [UdonSynced] private bool _unoChallengeActive;              // true while challenge window is open
+        [UdonSynced] private int _unoVulnerableSeat = -1;           // seat that forgot to call UNO
         [UdonSynced] private string _winnerName = "";               // non-empty while winner display is shown
 
         #endregion
@@ -234,10 +235,11 @@ namespace SketchFoxsky.Uno
 
                     bool changed = false;
 
-                    // Action card counter window expired — draw penalty cards, then skip
+                    // Action card counter window expired, draw penalty cards, then skip
                     if (_actionCardPending && Time.time >= _actionCardDeadline)
                     {
                         _actionCardPending = false;
+                        _pendingActionType = CardNum.None;
 
                         // Auto-draw penalty cards for the threatened player
                         for (int d = 0; d < _pendingDrawCount; d++)
@@ -251,7 +253,7 @@ namespace SketchFoxsky.Uno
                         changed = true;
                     }
 
-                    // UNO challenge window expired — player is safe
+                    // UNO challenge window expired player is safe
                     if (_unoChallengeActive && Time.time >= _unoChallengeDeadline)
                     {
                         _unoChallengeActive = false;
@@ -489,6 +491,8 @@ namespace SketchFoxsky.Uno
             _unoChallengeActive = false;
             _unoVulnerableSeat = -1;
             _winnerName = "";
+            _pendingActionType = CardNum.None;
+
 
             // Reset turn indicator to clockwise
             if (TurnOrder != null)
@@ -601,6 +605,7 @@ namespace SketchFoxsky.Uno
             _unoChallengeActive = false;
             _unoVulnerableSeat = -1;
             _winnerName = "";
+            _pendingActionType = CardNum.None;
             InitDeckOrder();
             ResetAllCardsToDeckMaster();
 
@@ -851,6 +856,7 @@ namespace SketchFoxsky.Uno
                             if (_actionCardPending)
                             {
                                 _actionCardPending = false;
+                                _pendingActionType = CardNum.None;
 
                                 // The manual draw counts as one; draw the rest of the penalty
                                 for (int d = 1; d < _pendingDrawCount; d++)
@@ -965,23 +971,25 @@ namespace SketchFoxsky.Uno
                     }
 
                     // Deny: action window active but card is not a valid action card
-                    if (_actionCardPending && !IsActionCard(c.CardNumber))
+               
+                    if (_actionCardPending)
                     {
-                        int pid2 = (seat >= 0) ? _playerIds[seat] : -1;
-
-                        Networking.SetOwner(Networking.LocalPlayer, c.gameObject);
-                        c.PlayRequested = false;
-                        c.IsInPlayedSlot = false;
-                        c.RequestSerialization();
-
-                        if (pid2 >= 0)
+                        if (!IsActionCard(c.CardNumber) || c.CardNumber != _pendingActionType)
                         {
-                            VRCPlayerApi p2 = VRCPlayerApi.GetPlayerById(pid2);
-                            if (p2 != null && p2.IsValid())
-                                Networking.SetOwner(p2, c.gameObject);
-                        }
+                            int pID2 = (seat >= 0) ? _playerIds[seat] : -1;
 
-                        return true;
+                            Networking.SetOwner(Networking.LocalPlayer, c.gameObject);
+                            c.PlayRequested = false;
+                            c.IsInPlayedSlot = false;
+                            c.RequestSerialization();
+
+                            if (pID2 >= 0)
+                            {
+                                VRCPlayerApi p2 = VRCPlayerApi.GetPlayerById(pID2);
+                                if (p2 != null && p2.IsValid())
+                                    Networking.SetOwner(p2, c.gameObject);
+                            }
+                        }
                     }
                 }
 

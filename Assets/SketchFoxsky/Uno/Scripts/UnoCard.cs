@@ -31,7 +31,8 @@ namespace SketchFoxsky.Uno
         Reverse,
         Skip,
         Wild,
-        WildPlusFour
+        WildPlusFour,
+        None
     }
 
     public enum CardState
